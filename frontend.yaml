@@ -79,7 +79,7 @@ Resources:
               OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${AppCloudFrontIdentity}"
         PriceClass: PriceClass_100 # USA & Europe only
         ViewerCertificate:
-          AcmCertificateArn: !Ref AcmCertificateArn
+          AcmCertificateArn: !Ref AcmCertificateArn # TODO: Generate cert in template
           SslSupportMethod: sni-only
 
   ############
