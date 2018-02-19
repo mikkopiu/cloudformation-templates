@@ -10,6 +10,16 @@ Parameters:
     Type: String
     Description: "VPC stack's name" 
 Resources:
+
+  ############################################################
+  # Split-view DNS
+  #
+  # PublicZone will respond to DNS requests from the Internet,
+  # while PrivateZone will respond with private IPs within
+  # the VPC -- allowing us to easily route all traffic
+  # within the VPC (without knowing any IPs)
+  ############################################################
+
   PublicZone:
     Type: AWS::Route53::HostedZone
     Properties:
