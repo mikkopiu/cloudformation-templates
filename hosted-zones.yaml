@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Route53 hosted zones with split-view DNS'
+Parameters:
+  DomainName:
+    Type: String
+    Description: 'The DNS name of an Amazon Route 53 hosted zone'
+    AllowedPattern: (?!-)[a-zA-Z0-9-.]{1,63}(?<!-)
+    ConstraintDescription: 'Must be a valid DNS zone name!'
+  VPCStack:
+    Type: String
+    Description: "VPC stack's name" 
+Resources:
+  PublicZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      HostedZoneConfig:
+        Comment: !Join ['', ['Public zone for ', !Ref 'DomainName']]
+      Name: !Ref 'DomainName'
+
+  PrivateZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      HostedZoneConfig:
+        Comment: !Join ['', ['Private zone for ', !Ref 'DomainName']]
+      Name: !Ref 'DomainName'
+      VPCs:
+        - VPCId:
+            Fn::ImportValue:
+              !Sub "${VPCStack}-VPCId"
+          VPCRegion: !Ref AWS::Region
+
+Outputs:
+  PublicZoneId:
+    Description: 'Public hosted zone ID'
+    Value: !Ref PublicZone
+    Export:
+      Name: !Sub "${AWS::StackName}-PublicZoneId"
+  PrivateZoneId:
+    Description: 'Private hosted zone ID'
+    Value: !Ref PrivateZone
+    Export:
+      Name: !Sub "${AWS::StackName}-PrivateZoneId"
