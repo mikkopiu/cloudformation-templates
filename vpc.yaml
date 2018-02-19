@@ -1,15 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Shared, configurable VPC template for all environments'
 Parameters:
-  AccessLocation:
-    Description: |
-      Lock down all access to a specific CIDR range to make unauthorized connections harder.
-      NOTE: Leave empty or set to 0.0.0.0/0 to allow unrestricted access.
-    Type: String
-    MaxLength: 18
-    Default: ''
-    AllowedPattern: "^$|(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
-    ConstraintDescription: Must be a valid CIDR range of the form x.x.x.x/x
   SSHLocation:
     Description: Lock down SSH access to a specific CIDR range to make unauthorized connections harder
     Type: String
@@ -18,16 +9,6 @@ Parameters:
     Default: '91.217.248.11/32'
     AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
     ConstraintDescription: Must be a valid CIDR range of the form x.x.x.x/x
-  EphemeralInboundAccess:
-    Description: |
-      Allow inbound access to ephemeral ports (1024-65535).
-      NOTE: ACL is stateless, so you need to allow inbound access in order to receive traffic from the Internet.
-      NOTE 2: Enabling this does not restrict traffic to AccessLocation and you should configure your own Security Groups
-    Type: String
-    Default: false
-    AllowedValues:
-    - true
-    - false
   AllowInterSubnetSSH:
     Description: |
       Allow SSH access between subnets in VPC.
@@ -65,8 +46,6 @@ Mappings:
       Zone: 'c'
 
 Conditions:
-  IsAccessRestricted: !Not [!Equals [!Ref AccessLocation, '']]
-  IsEphemeralListening: !Equals [!Ref EphemeralInboundAccess, 'true']
   IsInterSubnetSSHAllowed: !Equals [!Ref AllowInterSubnetSSH, 'true']
 
 Resources:
@@ -326,7 +305,7 @@ Resources:
       Protocol: 6 # = TCP
       RuleAction: allow
       Egress: false
-      CidrBlock: !If [IsAccessRestricted, !Ref AccessLocation, '0.0.0.0/0']
+      CidrBlock: '0.0.0.0/0'
       PortRange:
         From: 80
         To: 80
@@ -339,7 +318,7 @@ Resources:
       Protocol: 6
       RuleAction: allow
       Egress: false
-      CidrBlock: !If [IsAccessRestricted, !Ref AccessLocation, '0.0.0.0/0']
+      CidrBlock: '0.0.0.0/0'
       PortRange:
         From: 443
         To: 443
@@ -354,7 +333,7 @@ Resources:
       Protocol: 6
       RuleAction: allow
       Egress: false
-      CidrBlock: !If [IsAccessRestricted, !Ref AccessLocation, !Ref SSHLocation]
+      CidrBlock: !Ref SSHLocation
       PortRange:
         From: 22
         To: 22
@@ -367,7 +346,6 @@ Resources:
   # NOTE: You should instead restrict inbound traffic
   # with Security Groups, as they are stateful.
   InboundEphemeralPublicNetworkAclAllowAll:
-    Condition: IsEphemeralListening
     Type: AWS::EC2::NetworkAclEntry
     Properties:
       NetworkAclId: !Ref PublicNetworkAcl
