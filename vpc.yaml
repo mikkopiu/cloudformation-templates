@@ -478,7 +478,7 @@ Resources:
 
 Outputs:
   VPCId:
-    Description: 'VPCId of the newly created VPC'
+    Description: 'VPCId of the created VPC'
     Value: !Ref VPC
     Export:
       Name: !Sub "${AWS::StackName}-VPCId"
