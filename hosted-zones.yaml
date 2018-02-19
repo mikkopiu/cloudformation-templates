@@ -50,3 +50,8 @@ Outputs:
     Value: !Ref PrivateZone
     Export:
       Name: !Sub "${AWS::StackName}-PrivateZoneId"
+  DomainName:
+    Description: 'Domain name for other stacks to reference'
+    Value: !Ref DomainName
+    Export:
+      Name: !Sub "${AWS::StackName}-DomainName"
